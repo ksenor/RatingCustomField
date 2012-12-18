@@ -28,26 +28,13 @@
 //    public int compare(String cFOV1, String cFOV2, FieldConfig fc) {
 //        return -1;
 //    }
-//    
-//    @Override
-//    public Map<String, Object> getVelocityParameters(final Issue issue,
-//                                                     final CustomField field,
-//                                                     final FieldLayoutItem fieldLayoutItem) {
-//        final Map<String, Object> map = super.getVelocityParameters(issue, field, fieldLayoutItem);
-//        // This method is also called to get the default value, in
-//        // which case issue is null so we can't use it to add currencyLocale
-//        if (issue == null) {
-//            return map;
-//        }
-//        OptionsManager optionsManager = ComponentManager.getComponentInstanceOfType(OptionsManager.class);
-//        FieldConfig fieldConfig = field.getRelevantConfig(issue);
-//        map.put("options", optionsManager.getOptions(fieldConfig));
-//        return map;
-//    }
+    
+    
 //    
 //    
 package ru.slie.jira.plugins.customfields;
 
+import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.imports.project.customfield.ProjectCustomFieldImporter;
 import com.atlassian.jira.imports.project.customfield.ProjectImportableCustomField;
 import com.atlassian.jira.imports.project.customfield.SelectCustomFieldImporter;
@@ -96,12 +83,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.ofbiz.core.entity.GenericValue;
 
 /**
  * Select Custom Field Type allows selecting of a single {@link Option}.
@@ -116,7 +105,7 @@ import org.apache.lucene.search.TermQuery;
  */
 public class RatingCustomField extends AbstractSingleFieldType<Option>
         implements MultipleSettableCustomFieldType<Option, Option>, 
-        SortableCustomField<String>, GroupSelectorField, ProjectImportableCustomField, RestAwareCustomFieldType, RestCustomFieldTypeOperations
+        SortableCustomField<Option>, GroupSelectorField, ProjectImportableCustomField, RestAwareCustomFieldType, RestCustomFieldTypeOperations
 {
     private final OptionsManager optionsManager;
     private final ProjectCustomFieldImporter projectCustomFieldImporter;
@@ -124,12 +113,15 @@ public class RatingCustomField extends AbstractSingleFieldType<Option>
 
     private static final Logger log = Logger.getLogger(RatingCustomField.class);
 
-    public RatingCustomField(CustomFieldValuePersister customFieldValuePersister, OptionsManager optionsManager, GenericConfigManager genericConfigManager, JiraBaseUrls jiraBaseUrls)
+    public RatingCustomField(CustomFieldValuePersister customFieldValuePersister, 
+            OptionsManager optionsManager, GenericConfigManager genericConfigManager, 
+            JiraBaseUrls jiraBaseUrls)
     {
         super(customFieldValuePersister, genericConfigManager);
         this.optionsManager = optionsManager;
         this.jiraBaseUrls = jiraBaseUrls;
         projectCustomFieldImporter = new SelectCustomFieldImporter();
+        log.info("Constructor создан");
     }
 
     /**
@@ -330,34 +322,35 @@ public class RatingCustomField extends AbstractSingleFieldType<Option>
 
     // -------------------------------------------------------------------------------- Sortable custom field
     @Override
-    public int compare(@NotNull final String customFieldObjectValue1, @NotNull final String customFieldObjectValue2, final FieldConfig fieldConfig)
+    public int compare(@NotNull final Option customFieldObjectValue1, @NotNull final Option customFieldObjectValue2, final FieldConfig fieldConfig)
     {
-        final Options options = getOptions(fieldConfig, null);
-
-        if (options != null)
-        {
-            final int v1 = options.indexOf(options.getOptionById(Long.valueOf(customFieldObjectValue1)));
-            final int v2 = options.indexOf(options.getOptionById(Long.valueOf(customFieldObjectValue2)));
-
-            if (v1 > v2)
-            {
-                return 1;
-            }
-            else if (v1 < v2)
-            {
-                return -1;
-            }
-            else
-            {
-                return 0;
-            }
-
-        }
-        else
-        {
-            log.info("No options were found.");
-            return 0;
-        }
+//        final Options options = getOptions(fieldConfig, null);
+//
+//        if (options != null)
+//        {
+//            final int v1 = options.indexOf(options.getOptionById(Long.valueOf(customFieldObjectValue1)));
+//            final int v2 = options.indexOf(options.getOptionById(Long.valueOf(customFieldObjectValue2)));
+//
+//            if (v1 > v2)
+//            {
+//                return 1;
+//            }
+//            else if (v1 < v2)
+//            {
+//                return -1;
+//            }
+//            else
+//            {
+//                return 0;
+//            }
+//
+//        }
+//        else
+//        {
+          log.info("No options were found.");
+//            return 0;
+//        }
+        return 0;
     }
 
     @Override
@@ -427,5 +420,98 @@ public class RatingCustomField extends AbstractSingleFieldType<Option>
         FieldConfig config = field.getRelevantConfig(issueCtx);
         Option defaultValue = (Option) field.getCustomFieldType().getDefaultValue(config);
         return defaultValue == null ? null : new JsonData(CustomFieldOptionJsonBean.shortBean(defaultValue, jiraBaseUrls));
+    }
+    
+    @Override
+    public Map<String, Object> getVelocityParameters(final Issue issue,
+                                                     final CustomField field,
+                                                     final FieldLayoutItem fieldLayoutItem) {
+        final Map<String, Object> map = super.getVelocityParameters(issue, field, fieldLayoutItem);
+        // This method is also called to get the default value, in
+        // which case issue is null so we can't use it to add currencyLocale
+        if (issue == null) {
+            return map;
+        }
+        OptionsManager optionsManager = ComponentManager.getComponentInstanceOfType(OptionsManager.class);
+        FieldConfig fieldConfig = field.getRelevantConfig(issue);
+        map.put("options", optionsManager.getOptions(fieldConfig));
+        return map;
+    }
+    
+    
+    @Override
+    public Option getValueFromIssue(CustomField field, Issue issue) {
+        final Option option = super.getValueFromIssue(field, issue);
+        if (option == null)
+        {
+            return new Option() {
+
+                @Override
+                public Long getOptionId() {
+                    return 99999999999L;
+                }
+
+                @Override
+                public Long getSequence() {
+                    return 0L;
+                }
+
+                @Override
+                public String getValue() {
+                    return "None";
+                }
+
+                @Override
+                public Boolean getDisabled() {
+                    return false;
+                }
+
+                @Override
+                public GenericValue getGenericValue() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public FieldConfig getRelatedCustomField() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public Option getParentOption() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public List<Option> getChildOptions() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public void setSequence(Long l) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public void setValue(String string) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public void setDisabled(Boolean bln) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public List<Option> retrieveAllChildren(List<Option> list) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public void store() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            };            
+        }
+        return option;
     }
 }
