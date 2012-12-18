@@ -23,6 +23,11 @@ public class RatingCustomField extends SelectCFType {
             JiraBaseUrls jiraBaseUrls ) {
         super(customFieldValuePersister, optionManager, genericConfigManager, jiraBaseUrls);
     }
+
+    @Override
+    public int compare(String cFOV1, String cFOV2, FieldConfig fc) {
+        return -1;
+    }
     
     @Override
     public Map<String, Object> getVelocityParameters(final Issue issue,
