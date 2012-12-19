@@ -1,37 +1,3 @@
-//package ru.slie.jira.plugins.customfields;
-//
-//import com.atlassian.jira.ComponentManager;
-//import com.atlassian.jira.issue.Issue;
-//import com.atlassian.jira.issue.customfields.impl.SelectCFType;
-//import com.atlassian.jira.issue.customfields.manager.GenericConfigManager;
-//import com.atlassian.jira.issue.customfields.manager.OptionsManager;
-//import com.atlassian.jira.issue.customfields.option.Option;
-//import com.atlassian.jira.issue.customfields.persistence.CustomFieldValuePersister;
-//import com.atlassian.jira.issue.fields.CustomField;
-//import com.atlassian.jira.issue.fields.config.FieldConfig;
-//import com.atlassian.jira.issue.fields.layout.field.FieldLayoutItem;
-//import com.atlassian.jira.issue.fields.rest.json.beans.JiraBaseUrls;
-//import java.util.List;
-//import java.util.Map;
-//import org.ofbiz.core.entity.GenericValue;
-//
-//public class RatingCustomField extends SelectCFType {
-//    //private static final Logger log = LoggerFactory.getLogger(StarsCustomField.class);
-//    public RatingCustomField(CustomFieldValuePersister customFieldValuePersister,
-//            OptionsManager optionManager,
-//            GenericConfigManager genericConfigManager,
-//            JiraBaseUrls jiraBaseUrls ) {
-//        super(customFieldValuePersister, optionManager, genericConfigManager, jiraBaseUrls);
-//    }
-//
-//    @Override
-//    public int compare(String cFOV1, String cFOV2, FieldConfig fc) {
-//        return -1;
-//    }
-    
-    
-//    
-//    
 package ru.slie.jira.plugins.customfields;
 
 import com.atlassian.jira.ComponentManager;
@@ -324,33 +290,30 @@ public class RatingCustomField extends AbstractSingleFieldType<Option>
     @Override
     public int compare(@NotNull final Option customFieldObjectValue1, @NotNull final Option customFieldObjectValue2, final FieldConfig fieldConfig)
     {
-//        final Options options = getOptions(fieldConfig, null);
-//
-//        if (options != null)
-//        {
-//            final int v1 = options.indexOf(options.getOptionById(Long.valueOf(customFieldObjectValue1)));
-//            final int v2 = options.indexOf(options.getOptionById(Long.valueOf(customFieldObjectValue2)));
-//
-//            if (v1 > v2)
-//            {
-//                return 1;
-//            }
-//            else if (v1 < v2)
-//            {
-//                return -1;
-//            }
-//            else
-//            {
-//                return 0;
-//            }
-//
-//        }
-//        else
-//        {
-          log.info("No options were found.");
-//            return 0;
-//        }
-        return 0;
+        final Options options = getOptions(fieldConfig, null);
+
+        if (options != null)
+        {
+            final Long v1 = customFieldObjectValue1.getSequence();
+            final Long v2 = customFieldObjectValue2.getSequence();
+
+            if (v1 > v2)
+            {
+                return 1;
+            }
+            else if (v1 < v2)
+            {
+                return -1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     @Override

@@ -10,7 +10,7 @@
                 #else
                     #set ($checked = '')
                 #end
-                <input$!{checked} class="radio" id="${customField.id}-${velocityCount}" name="${customField.id}" type="radio" value="$cfValueEncoder.encodeForHtml($option.value)"/>
+                <input$!{checked} class="radio" id="${customField.id}-${velocityCount}" name="${customField.id}" type="radio" value="$cfValueEncoder.encodeForHtml($option.getValue())"/>
             #end
         #end
         <script type="text/javascript">
